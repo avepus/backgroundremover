@@ -90,11 +90,16 @@ def matte_key(output, file_path,
         file_path
     ]
     framerate_output = sp.check_output(cmd, universal_newlines=True)
+    framerate_output = framerate_output.replace(',','') #aap added line to strip comma in ffprbe command. For some reason videos from my phone had a comma returned from this command
     total_frames = int(framerate_output)
     if frame_limit != -1:
         total_frames = min(frame_limit, total_frames)
 
-    fr = info["streams"][0]["r_frame_rate"]
+    #aap this used to just grab the first steam but that was not working for videos from my phone. The first steam was audio. Now it grabs the first non-audio/data stream
+    for stream in info["streams"]:
+        if 'codec_name' in stream.keys() and stream['codec_name'] not in ['data', 'aac', 'm4a', 'flac', 'wav', 'ac3']:
+            fr = stream["r_frame_rate"]
+
 
     if framerate == -1:
         print(F"FRAME RATE DETECTED: {fr} (if this looks wrong, override the frame rate)")
